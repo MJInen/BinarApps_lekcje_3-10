@@ -3,9 +3,27 @@
 This README would normally document whatever steps are necessary to get the
 application up and running.
 
+* Own work progress list
+
+- [x] Lesson 1 - done - content in repo: MJInen/ruby-on-rails-course
+- [x] Lesson 2 - done - content in repo: MJInen/ruby-on-rails-course
+- [ ] Lesson 3 - in progress
+- [ ] Lesson 4
+- [ ] Lesson 5
+- [ ] Lesson 6
+- [ ] Lesson 7
+- [ ] Lesson 8
+- [ ] Lesson 9
+- [ ] Lesson 10
+
+
 Things you may want to cover:
 
-* Ruby version
+* Ruby
+  > version 3.0.0p0
+
+* RoR
+  > version 7.0.3
 
 * System dependencies
 
