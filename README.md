@@ -25,13 +25,18 @@ Things you may want to cover:
 * RoR
   > version 7.0.3
 
+* Database
+  > PostgreSQL 12.11
+
 * System dependencies
 
 * Configuration
 
-* Database creation
+* Application and Database creation with proper DB
+  > rails new BinarApps_lekcje_3-10 -d postgresql
 
 * Database initialization
+  > rails db:create
 
 * How to run the test suite
 
@@ -40,4 +45,4 @@ Things you may want to cover:
 * Deployment instructions
 
 * ...
-* ...
+

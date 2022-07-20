@@ -1,0 +1,52 @@
+********************************************************
+*** Te punkty dotyczą lekcji nr 3, NIE pracy własnej ***
+********************************************************
+
+### -1- ###
+By później nie bawić się z zmiany w plikach konfiguracyjnych, od razu startujemy z docelową bazą:
+>rails new BinarApps_lekcje_3-10 -d postgresql
+>cd BinarApps_lekcje_3-10
+
+Tworzymy ją:
+>rails db:create
+
+No i Git, jako, że Rails w aplikacji od razu tworzy repozytorium
+pozostajne tylko wykonać poniższe czynności:
+>git add .
+>git commit -m "..."
+>git remote add origin ...
+>git push origin main
+
+
+=========================================================
+WAZNE WAZNE WAZNE WAZNE WAZNE WAZNE WAZNE WAZNE WAZNE ===
+=========================================================
+w pliku "config/application.rb" w klasie "Application" należy dodać:
+    config.time_zone = 'Warsaw'
+    config.active_record.default_timezone = :local
+
+w przeciwnym wypadku rozjadą się czasy:
+    Time.now
+    Time.current
+i wszelkie selekty na zależnosciach czasowych posypią sie.
+
+Trudno mi powiedzieć, czy te ustawienia nie będą miały jakichś skutków ubocznych w przyszłości, ale teraz data utworzenia rekordu w Rails jest identyczna z tą odczytywaną przez Postgres.
+Przynajmniej ja tak miałem - warto zgłebić ten temat, bo konsekwencje na przyszłość mogą okazać się bolesne.
+
+
+
+### -2- ###
+
+>rails g model User name:string
+>rails db:migrate
+jak coś pójdzie nie tak zawsze można: rails db:rollback - kozacka opcja
+
+
+### -4- ###
+Tutaj po dodaniu: "has_many :posts" w pliku "app/models/user.rb"
+nie zapomnijcie ponownie odpalić:
+>rails db:migrate
+w przeciwnym przypadku, utworzenie Posta nie powiedzie się.
+
+
+
