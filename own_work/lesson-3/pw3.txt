@@ -1,2 +1,205 @@
 
+# 1
+# z konsoli Rails:
+
+title_and_body = [
+  "Drony",          "O robieniu licencji na drony.",
+  "Moto",           "Dalekie podroze na dwoch kolkach.",
+  "Drewno",         "Zajecia z toczenia w drewnie.",
+  "Solarigrafia",   "Tani sposb na 'fotografowanie'.",
+  "Zegarki",        "Kolekcjonowanie zegarkow."
+]
+
+user = User.create(name: 'Marek')
+
+(0...title_and_body.size).step(2).each do |idx|
+  Post.create(
+    title: title_and_body[idx],
+    body: title_and_body[idx + 1],
+    user_id: user.id)
+end
+
+
+
+
+# 2
+>rails g model Comment post:belongs_to  user:belongs_to content:string
+>rails db:migrate
+
+Tak powinny wyglądać pliki naszych modeli:
+
+class User < ApplicationRecord
+    has_many :posts
+
+    validates :name, presence: true
+    validates :name, format:   /[A-Z][a-z]*/
+
+    scope :created_today, -> { where("created_at > ?", Date.today.beginning_of_day) }
+    scope :with_name, ->(name) { where("name LIKE ?", "#{name}%") }
+end
+
+class Post < ApplicationRecord
+  belongs_to :user
+  has_many :commnets
+
+  validates :title, :body, presence: true
+end
+
+class Comment < ApplicationRecord
+  belongs_to :post
+  belongs_to :user
+end
+
+
+
+
+# 3
+Teraz klasa "Comment" powinna wyglądać tak:
+
+class Comment < ApplicationRecord
+  belongs_to :post
+  belongs_to :user
+  
+  validates :content, presence: true
+  validates :content, length { maximum: 140 }
+end
+
+
+
+
+# 4
+
+Przyda się trochę danych do sprawdzenia naszych struktur:
+
+Comment.create(content: "komentarz od Jana Kowalskiego", user_id: 5, post_id: 1)
+Comment.create(content: "koment. #1 od Marka", user_id: 6, post_id: 4)
+Comment.create(content: "koment. #2 od Marka", user_id: 6, post_id: 5)
+
+
+Może ktoś będzie chciał użyć PostgreSQL, więc jest zapytanie:
+SELECT u.name FROM users AS u, comments AS c WHERE u.id = c.user_id;
+
+Lub z konsoli Rails:
+User.joins(posts: [{ comments: :user }])
+
+
+
+
+# 5
+
+SELECT p.title, p.body FROM users AS u, posts AS p 
+    WHERE u.id = p.user_id AND u.name = 'Jan Kowalski';
+    
+LUB
+
+Post.joins(:user).where(users: { name: 'Marek' } )
+
+
+
+
+# 6
+
+SELECT content FROM comments AS c, users AS u
+  WHERE u.id = c.user_id
+  AND u.name LIKE 'Jan Kowalski';
+
+LUB
+
+Comment.joins(:user).where(user: {name: 'Jan Kowalski'})
+
+
+
+
+# 6'
+
+SELECT c.id, c.content FROM comments AS c, users AS u, posts AS p
+  WHERE u.id = c.user_id
+  AND p.id = c.post_id
+  AND u.name = 'Marek'
+  AND p.title = 'Solarigrafia';
+  
+LUB
+
+Comment.joins(:user, :post).where(users: {name: 'Marek'}, posts: {title: 'Solarigrafia' } )
+
+
+# 7
+Klika słów wyjaśnienia do operacji związanych z czasem, trzeba uważać bo łatwo się
+pogubić, ale tak naprawde w dwóch poniższych INSERTach nie robimy nic poza dodaniem
+rekordu, z datą do przodu - pierwszy INSERT jest mnie więcej zgodny z wymaganiami
+z "Pracy domowej". Drugi w celach testowych.
+
+Istotniejsze są zapytania (SQL/Rails console) to tam ustalamy interwał czasu,
+który ma upłynąć zanim rekord pojawi się w naszej aplikacji.
+
+Dodanie rekordu to tablicy Comments:
+
+==> wymagane
+INSERT INTO comments (post_id, user_id, content, created_at, updated_at)
+VALUES (
+	1,
+	5,
+	'...(SQL) plus 24 hours...',
+	NOW()::timestamp + interval '1 day',
+	NOW()::timestamp + interval '1 day');
+
+
+==> testowe
+INSERT INTO comments (post_id, user_id, content, created_at, updated_at)
+VALUES (
+	1,
+	5,
+	'...(SQL) plus 5 minutes...',
+	NOW()::timestamp + interval '5 minutes',
+	NOW()::timestamp + interval '5 minutes');
+
+LUB
+
+Tutaj, analogicznie jak przy INSERTach, tylko, że tutaj operujemy z konsoli Rails.
+
+==> wymagane
+Comment.create(
+  content: "---(Rails c) plus 24 houts -----",
+  created_at: Time.current + 24.hour,
+  post_id: 1,
+  user_id: 5)
+
+==> testowe
+Comment.create(
+  content: "---(Rails c) plus 5 minutes -----",
+  created_at: Time.current + 5.minutes,
+  updated_at: Time.current + 5.minutes,
+  post_id: 1,
+  user_id: 5)
+
+
+
+================  
+==> Zapytania:
+================
+
+==> wymagane
+SELECT id, content, created_at FROM comments
+WHERE LENGTH(content) > 100
+AND (extract(epoch FROM NOW()::timestamp) - extract(epoch FROM created_at)) > 5 * 60;
+
+==> testowe
+SELECT id, content, created_at FROM comments
+WHERE (extract(epoch FROM NOW()::timestamp) - extract(epoch FROM created_at)) > 5 * 60;
+
+LUB
+
+==> wymagane
+Comment.where('created_at < ?', Time.zone.now - 5.minutes).where('size(content) > 100')
+
+==> testowe
+Comment.where('created_at < ?', Time.zone.now - 5.minutes)
+
+
+
+A później już tylko:
+git add .
+git commit -m "Lesson #3, final :) version"
+git push origin main
+
 
